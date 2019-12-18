@@ -11,6 +11,7 @@ class CPU:
         self.ram = [0] * 256
         self.pc = 0
         self.fl = 0
+        self.sp = 7
         self.instructions = {
             0b10000010:self.LDI,
             0b01000111:self.PRN,
@@ -18,6 +19,8 @@ class CPU:
             0b10100000:self.ADD,
             0b10100001:self.SUB,
             # 0b10100011:self.DIV
+            0b01000101:self.PUSH,
+            0b01000110:self.POP
         }
 
 
@@ -127,6 +130,19 @@ class CPU:
         self.alu("SUB", op_a, op_b)
         self.pc += 2
 
+    def PUSH(self):
+        self.reg[self.sp] -= 1
+        self.pc += 1
+        reg = self.ram_read(self.pc)
+        self.ram_write(self.reg[self.sp], self.reg[reg])
+
+    def POP(self):
+        self.pc += 1
+        reg = self.ram_read(self.pc)
+        data = self.ram_read(self.reg[self.sp])
+        self.reg[reg] = data
+        self.reg[self.sp] += 1
+    
 
     def run(self):
         """Run the CPU."""
