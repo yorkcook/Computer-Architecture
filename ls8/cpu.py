@@ -9,9 +9,10 @@ class CPU:
         """Construct a new CPU."""
         self.reg = [0] * 8
         self.ram = [0] * 256
+        self.reg.append(0xf4)
         self.pc = 0
         self.fl = 0
-        self.sp = 7
+        self.sp = 8
         self.instructions = {
             0b10000010:self.LDI,
             0b01000111:self.PRN,
@@ -20,7 +21,10 @@ class CPU:
             0b10100001:self.SUB,
             # 0b10100011:self.DIV
             0b01000101:self.PUSH,
-            0b01000110:self.POP
+            0b01000110:self.POP,
+            0b00010001:self.RET,
+            0b01010000:self.CALL,
+            0b00000000: self.NOP
         }
 
 
@@ -142,6 +146,23 @@ class CPU:
         data = self.ram_read(self.reg[self.sp])
         self.reg[reg] = data
         self.reg[self.sp] += 1
+
+    def CALL(self):
+        return_address = self.pc + 1 
+        self.reg[self.sp] -= 1
+        self.ram_write(self.reg[self.sp], return_address)
+        reg_num = self.ram_read(self.pc + 1)
+        self.pc = self.reg[reg_num]
+
+
+        
+    def RET(self):
+        self.pc = self.ram_read(self.reg[self.sp])
+        self.reg[self.sp] += 1
+
+    def NOP(self):
+        pass
+
     
 
     def run(self):
@@ -155,7 +176,8 @@ class CPU:
             if ir == 0b00000001:
                 running = False
 
+    
             else:
                 self.instructions[ir]()
-                self.pc += 1
+                self.pc += 1 
 
